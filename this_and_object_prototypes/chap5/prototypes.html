@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+/*
+<h1> Chapter 5: Prototypes</h1>
+Note: All of the attempts to emulate class-copy behavior, as described previously in Chapter 4, labeled as
+variations of "mixins", completely circumvent the [[Prototype]] chain mechanism we examine here in this chapter
+
+<em>[[Prototype]]</em>
+
+Objects in javascript have an internal property, denoted in the specification as [[Prototype]] which is simply a
+reference to another object. Almost all object are given a non-<code>null</code> value for this property, at the
+time of their creation.
+
+Note: We will see shortly that it is possible for an object to have an empty <code>[[Prototype]]</code> linkage,
+though this is somewhat less common.
+
+consider:
+*/
+
+var myObject = {
+  a:2
+};
+
+myObject.a; // 2
+
+myObject.a; // 2
+/*
+What is the <code>[[Prototype]]</code> reference used for? In chapter 3, we examined the <code>[[Get]]</code>
+operation that is invoked when you reference a property on an object, such as <code>myObject.a</code>. For that
+default <code>[[Get]]</code> operation, the first step is to check if the object itself has a property <code>a</code>
+on it, and if so, it's used.
+
+Note: ES6 Proxies are outside our discussion in this chapter - normal <code>[[Get]]</code> & <code>[[Put]]</code>
+behavour does not apply if a <code>Proxy</code>
+
+But it's what happens if <code>a</code> <b>isn't present on <code>myobject</code> that brings our attention now
+to the <code>[[Prototype]]</code> link of the object.
+
+The default <code>[[Get]]</code> operation proceeds to follow the [[Prototype]] <b>link</b> of the object if it
+cannot find the requested property on the object directly.
+*/
+
+var anotherObject = {
+  a:2
+
+};
+// create an object linked to 'anotherObject'
+var myObject = Object.create( anotherObject );
+
+myobject.a ; // 2
+/*
+
+Note: We will explain what <code>Object.create(..)</code> does, and how it operates, shortly. For now, just assume
+it creates an object with the <code>[[Prototype]]</code> linkage we're examining to the object specified.
+
+So, we have <code>myObject</code> that is now <code>[[Prototype]]</code> linked to <code>anotherObject</code>.
+Clearly <code>myobject.a</code> doesn't actually exist, but nevertheless, the property access succeeds (been found
+on <code>anotherObject</code> instead) and indeed finds the value <code>2</code>.
+
+But, if <code>a</code> weren't found on <code>anotherObject</code> either, its <code>[[Prototype]]</code> chain,
+if non-empty, is again consulted and followed.
+
+This process continues until either a matching property name is foiund, or the <code>[[Prototype]]</code> chain ends.
+If no matching property is ever found by the end of the chain, the return result from the <code>[[Get]]</code>
+operation is <code>undefined</code>.
+
+Similar to this <code>[[Prototype]]</code> chain look-up process, if you use a <code>for..in</code> loop to iterate
+over an object, any property that cna be reached via its chain (and is also <code>enumberable</code> -- chap 3) will be
+enumerated. If you use the <code>in</code> operator to test for the existance of a property on object, <code>in</code> will
+check the entire chain of the object (regardless of enumberability).
+*/
+
+// create an object linked to `anotherObject`
+var myObject = Object.create( anotherObject );
+
+for (var k in myObject) {
+    console.log("found: " + k);
+}
+
+// found: a
+
+("a" in myObject);  // true
+
+/*
+So, the <code>[[Prototype]]</code> chain is consulted, one link at a time, when you perform property look-ups in
+various fashions. The look-up stops once the property is found or the the chain ends.
+
+<em>Object.prototype</em>
+
+But where exactly does the <code>[[Prototype]]</code> chain "end"?
+
+The top-end of every normal <code>[[Prototype]]</code> chain is the built-in <code>Object.prototype</code>.
+This object includes a variety of common utilities used all over JS, because all normal (built-in, not
+host-specific extention) objects in JS "decend from" (aka, have at the top of their <code>[[Prototype]]</code>
+chain) the <code>Object.prototype</code> object.
+
+Some utilities you might know include <code>.toString()</code> and <code>.valueOf()</code>. In Chap 3,
+we introduced another: <code>.hasOwnProperty(..)</code>. And yet another function on <code>Object.prototype</code>
+you may not be familiar with, but which we'll address later in this chap, is <code>.isPrototypeOf(..)</code>.
+
+<em>Settings & Shadowing Properties</em>
+*/
+myObject.foo = "bar";
+
+/*
+If the <code>myObject</code> object already has a normal data accessor property called <code>foo</code> directly
+present on it, the assignment is as simple as changing the value of the existing property.
+
+if <code>foo</code> is not already present directly on <code>myObject</code>, the <code>[[Prototype]]</code>
+chain is traversed, just like the <code>[[Get]]</code> operation. If <code>foo</code> is added directly to
+<code>myObject</code> with the specified value, as expected.
+
+However, if <code>foo</code> is already present somewhere higher in the chain, nuanced (and perhap surpirsing)
+behaviour can occur with the </code>myObject.foo = "bar"</code> assignment.
+
+If the property name <code>foo</code> ends up both on <code>myObject</code> itself and at a higher level of <thead>
+code>[[Prototype]]</code> chain that starts at <code>myObject</code>, this is called <i>shadowing</i>. The <code>foo</code>
+property directly on the <code>myObject</code> shadows any <code>foo</code> property which appears higher in the chain,
+because the <code>myObject.foo</code> look-up would always find the <code>foo</code> property that's lowest in the chain.
+
+As we just hinted, shadowing <code>foo</code> on <code>myObject</code> is not as simple as it may seem. We will now examine
+three scenarios for the <code>myObject.foo = "bar"</code> assignment when <code>foo</code> is not already on <code>myObject</code>
+directly, but <b>is</b> at a higher level of <code>myObject</code>'s <code>[[Prototype]]</code> chain:
+
+1.If a normal data accessor (see chap 3) propert named <code>foo</code> is found anywhere higher on the <code>[[Prototype]]</code>
+chain, <b>and it's not marked as read-only(writable:false)</b> then a new property called <code>foo</code> is added
+directly to <code>myobject</code>, resulting in a <b>shadowed property</b> .
+
+2.If a <code>foo</code> is found higher on the <code>[[Prototype]]</code> chain, but it's marked <b>read-only (writable:false)</b>,
+then both the setting of that existing property as well as the creation of the shadowed property on <code>myObject</code>
+<b>are disallowed</b>. If the code is running in <code>strict mode</code>, an error will be thrown. Otherwise, the Setting
+of the property calue will silently be ignored. Either way, <b>no shadowing occurs</b>.
+
+3.If a <code>foo</code> is found higher on the <code>[[Prototype]]</code> chain and it's setter (chap 3), then the,
+setter will always be called. No <code>foo</code> will be added to (aka, shadowed on) <code>myObject</code>, nor will
+the <code>foo</code> setter be redefined.
+
+Most developers assume that assignment of a property (<code>[[Put]]</code>) will always result in shadowing if the property
+already exists higher on the <code>[[Prototype]]</code> chain, but as you can see, thats's only true in one (#1) of the three
+situations just described.
+
+if you want to shadow <code>foo</code> in cases #2 and #3, you cannot use <code>=</code> addignment, but must instead use
+<code>Object.defineProperty(..)</code> (chap3) to add <code>foo</code> to <code>myObject</code>.
+
+Note: Case #2 may be the most surprising of the three. The presence of a read-only property prevents a
+property of the same name being implicitly created (shadowed) at a lower level of a <code>[[Prototype]]</code> chain.
+The reason for this restriction is primarily to reinforce the illusion of class-inherited properties.
+If you think of the foo at a higher level of the chain as having been inherited (copied down) to <code>myObject</code>,
+then it makes sense to enforce the non-writable nature of that <code>foo</code> property on <code>myObject</code>.
+If you however separate the illusion from the fact, and recognize that no such inheritance copying actually
+occurred (see Chapters 4 and 5), it's a little unnatural that <code>myObject</code> would be prevented from having a foo
+property just because some other object had a non-writable <code>foo</code> on it. It's even stranger that this restriction
+only applies to = assignment, but is not enforced when using <code>Object.defineProperty(..)</code>.
+
+Shadowing with <b>methods</b> leads to ugly explicit pseudo-polymorphism (chap4) if you need to delegate between them.
+Usually, shadowing is more complicated and nuanced than it's worth, <b>so you should try to avoid it if possible</b>.
+See chap 6 for alternative design pattern, which among other things discourages shawoing in favour of cleaner alternatives.
+
+shadowing can even occur implicitly in subtle ways, so care must be taken if trying to avoid it. Consider:
+
+*/
+
+var anotherObject = {
+	a: 2
+};
+
+var myObject = Object.create( anotherObject );
+
+anotherObject.a; // 2
+myObject.a; // 2
+
+anotherObject.hasOwnProperty( "a" ); // true
+myObject.hasOwnProperty( "a" ); // false
+
+myObject.a++; // oops, implicit shadowing!
+
+anotherObject.a; // 2
+myObject.a; // 3
+
+myObject.hasOwnProperty( "a" ); // true
+/*
+
+Though it may appear that <code>myObject.a++</code> should (via delegation) look-up and just increment the
+<code>anotherObject.a</code> property itself in place, instead the <code>++</code> operation corresponds to
+<code>myObject.a = myObject.a + 1</code>. The result is <code>[[Get]]</code> looking up <code>a</code> property
+via <code>[[Prototype]]</code> to get the current value <code>2</code> from <code>anotherObject.a</code>, incrementing
+the value by one, then <code>[[Put]]</code> assigning the <code>3</code> value to a new shadowed property <code>a</code>
+on <code>myObject</code>.
+
+Be very careful when dealing with delegated properties that you modify. If you wanted to increment
+<code>anotherObject.a</code>, the proper way is <code>anotherObject.a++</code>
+
+<em>"Class"</em>
+At this point, you might be wondering: "Why does one object need to link to another object?" What's the real
+benefit? That is a very appropriate question to ask, but we must first understand what [[Prototype]] is not
+before we can fully understand and appreciate what it is and how it's useful.
+
+As we explained in Chapter 4, in JavaScript, there are no abstract patterns/blueprints for objects called
+"classes" as there are in class-oriented languages. JavaScript just has objects.
+
+In fact, JavaScript is almost unique among languages as perhaps the only language with the right to use the
+label "object oriented", because it's one of a very short list of languages where an object can be created
+directly, without a class at all.
+
+In JavaScript, classes can't (being that they don't exist!) describe what an object can do. The object defines
+its own behavior directly. There's just the object.
+
+<em>"Class" Functions</em>
+There's a peculiar kind of behavior in JavaScript that has been shamelessly abused for years to hack something
+that looks like "classes". We'll examine this approach in detail.
+
+The peculiar "sort-of class" behavior hinges on a strange characteristic of functions: all functions by default
+get a public, non-enumerable (see Chapter 3) property on them called prototype, which points at an otherwise
+arbitrary object.
+*/
+function Foo(){
+  // ...
+
+}
+
+Foo.prototype;  // { }
+/*
+This object is often called "Foo's prototype", because we access it via an unfortunately-named Foo.prototype
+property reference. However, that terminology is hopelessly destined to lead us into confusion, as we'll see
+shortly. Instead, I will call it "the object formerly known as Foo's prototype". Just kidding. How about:
+"object arbitrarily labeled 'Foo dot prototype'"?
+
+Whatever we call it, what exactly is this object?
+
+The most direct way to explain it is that each object created from calling new Foo() (see Chapter 2) will end up
+(somewhat arbitrarily) [[Prototype]]-linked to this "Foo dot prototype" object.
+
+Let's illustrate:
+*/
+function Foo(){
+    // ...
+
+}
+
+var a = new Foo();
+
+Object.getPrototypeOf( a ) === Foo.prototype;   // true
+/*
+When <code>a</code> is created by calling <code>new Foo()</code>, one of the things (see Chapter 2 for all four
+steps) that happens is that <code>a</code> gets an internal <code>[[Prototype]]</code> link to the object that
+<code>Foo.prototype</code> is pointing at.
+
+Stop for a moment and ponder the implications of that statement.
+
+In class-oriented languages, multiple <b>copies</b> (aka, "instances") of a class can be made, like stamping
+something out from a mold. As we saw in Chapter 4, this happens because the process of instantiating
+(or inheriting from) a class means, "copy the behavior plan from that class into a physical object", and this is
+done again for each new instance.
+
+But in JavaScript, there are no such copy-actions performed. You don't create multiple instances of a class. You
+can create multiple objects that <code>[[Prototype]]</code> link to a common object. But by default, no copying
+occurs, and thus these objects don't end up totally separate and disconnected from each other, but rather, quite
+<b>linked</b>.
+
+<code>new Foo()</code> results in a new object (we called it <code>a</code>), and <b>that</b> new object
+<code>a</code> is internally <code>[[Prototype]]</code> linked to the <code>Foo.prototype</code> object.
+
+<b>We end up with two objects, linked to each other</b>. That's it. We didn't instantiate a class. We certainly
+didn't do any copying of behavior from a "class" into a concrete object. We just caused two objects to be linked
+to each other.
+
+In fact, the secret, which eludes most JS developers, is that the <code>new Foo()</code> function calling had
+really almost nothing direct to do with the process of creating the link. <b>It was sort of an accidental
+side-effect. <code>new Foo()</code> is an indirect, round-about way to end up with what we want:
+<b>a new object linked to another object.</b>
+
+Can we get what we want in a more direct way? <b>Yes!</b> The hero is <code>Object.create(..)</code>. But we'll
+get to that in a little bit.
+
+<b>What's in a name?</b>
+In JavaScript, we don't make copies from one object ("class") to another ("instance"). We make links between
+objects. For the <code>[[Prototype]]</code> mechanism, visually, the arrows move from right to left, and from
+bottom to top.
+
+https://github.com/getify/You-Dont-Know-JS/blob/1st-ed/this%20%26%20object%20prototypes/fig3.png
+
+s mechanism is often called "prototypal inheritance" (we'll explore the code in detail shortly), which is commonly said to be the dynamic-language version of "classical inheritance". It's an attempt to piggy-back on the common understanding of what "inheritance" means in the class-oriented world, but tweak (read: pave over) the understood semantics, to fit dynamic scripting.
+
+The word "inheritance" has a very strong meaning (see Chapter 4), with plenty of mental precedent. Merely adding "prototypal" in front to distinguish the actually nearly opposite behavior in JavaScript has left in its wake nearly two decades of miry confusion.
+
+I like to say that sticking "prototypal" in front of "inheritance" to drastically reverse its actual meaning is
+like holding an orange in one hand, an apple in the other, and insisting on calling the apple a "red orange".
+No matter what confusing label I put in front of it, that doesn't change the fact that one fruit is an apple and
+the other is an orange.
+
+The better approach is to plainly call an apple an apple -- to use the most accurate and direct terminology.
+That makes it easier to understand both their similarities and their <b>many differences</b>, because we all
+have a simple, shared understanding of what "apple" means.
+
+Because of the confusion and conflation of terms, I believe the label "prototypal inheritance" itself (and
+trying to mis-apply all its associated class-orientation terminology, like "class", "constructor", "instance",
+"polymorphism", etc) has done <b>more harm than good</b>in explaining how JavaScript's mechanism really works.
+
+"Inheritance" implies a copy operation, and JavaScript doesn't copy object properties (natively, by default).
+Instead, JS creates a link between two objects, where one object can essentially delegate property/function
+access to another object. "Delegation" (see Chapter 6) is a much more accurate term for JavaScript's object-linking
+mechanism.
+
+Another term which is sometimes thrown around in JavaScript is "differential inheritance". The idea here is that
+we describe an object's behavior in terms of what is different from a more general descriptor. For example, you
+explain that a car is a kind of vehicle, but one that has exactly 4 wheels, rather than re-describing all the
+specifics of what makes up a general vehicle (engine, etc).
+
+If you try to think of any given object in JS as the sum total of all behavior that is available via
+delegation, and <b>in your mind you flatten</b>all that behavior into one tangible thing, then you can (sorta)
+see how "differential inheritance" might fit.
+
+But just like with "prototypal inheritance", "differential inheritance" pretends that your mental model is more
+important than what is physically happening in the language. It overlooks the fact that object B is not actually
+differentially constructed, but is instead built with specific characteristics defined, alongside "holes" where
+nothing is defined. It is in these "holes" (gaps in, or lack of, definition) that delegation can take over and,
+on the fly, "fill them in" with delegated behavior.
+
+The object is not, by native default, flattened into the single differential object, <b>through copying</b> that
+the mental model of "differential inheritance" implies. As such, "differential inheritance" is just not as
+natural a fit for describing how JavaScript's [[Prototype]] mechanism actually works.
+
+You can choose to prefer the "differential inheritance" terminology and mental model, as a matter of taste,
+but there's no denying the fact that it only fits the mental acrobatics in your mind, not the physical behavior
+in the engine.
+
+<em>"Constructors"</em>
+*/
+function Foo() {
+  // ...
+
+}
+
+var a = new Foo();
+
+/*
+What exactly leads us to think <code>Foo</code> is a "class"?
+
+For one, we see the use of the new keyword, just like class-oriented languages do when they construct class
+instances. For another, it appears that we are in fact executing a constructor method of a class, because
+<code>Foo()</code> is actually a method that gets called, just like how a real class's constructor gets called
+when you instantiate that class.
+
+To further the confusion of "constructor" semantics, the arbitrarily labeled Foo.prototype object has another
+trick up its sleeve.
+
+Consider this code:
+*/
+function Foo(){
+      // ...
+}
+
+Foo.prototype.constructor ===Foo; // true
+
+var a = newFoo();
+a.constructor === foo // true
+/*
+The <code>Foo.prototype</code> object by default (at declaration time on line 1 of the snippet!) gets a public,
+non-enumerable (see Chapter 3) property called <code>.constructor</code>, and this property is a reference back
+to the function (Foo in this case) that the object is associated with. Moreover, we see that object a created by
+the "constructor" call <code>new Foo()</code> seems to also have a property on it called <code>.constructor</code>
+which similarly points to "the function which created it".
+
+Note: This is not actually true. <code>a</code> has no <code>.constructor</code> property on it, and though
+<code>a.constructor<code> does in fact resolve to the <code>Foo</code> function, "constructor"
+<b>does not actually mean</b> "was constructed by", as it appears. We'll explain this strangeness shortly.
+
+Oh, yeah, also... by convention in the JavaScript world, "class"es are named with a capital letter, so the fact
+that it's <code>Foo</code> instead of <code>foo</code> is a strong clue that we intend it to be a "class".
+That's totally obvious to you, right!?
+
+Note: This convention is so strong that many JS linters actually complain if you call new on a method with a
+lowercase name, or if we don't call <code>new</code> on a function that happens to start with a capital letter.
+That sort of boggles the mind that we struggle so much to get (fake) "class-orientation" right in JavaScript that
+we create linter rules to ensure we use capital letters, even though the capital letter doesn't mean <b>anything at
+all</b> to the JS engine.
+
+<em>Constructor Or Call?</em>
+
+In the above snippet, it is tempting to think that <code>Foo</code> is a "constructor", because we call it with
+<code>new</code> and we observe that it "constucts" an object.
+
+In reality, <code>Foo</code> is no more a "constructor" than any other function in your program. Functions themselves
+are <b>not</b> constructors. However, when you put the <code>new</code> keyword in front of a normal function call,
+that makes that function call a "constructor call". In fact, <code>Foo</code> is no more a "constructor" than any
+other function in your program, Functions themselves are <b>not</b> constructors. However, when you put the
+<code>new</code> keyword in front of a normal function call, that makes that function call a "constructor call".
+In fact, <code>new</code> sort of hijacks an normal function and calls it in a fashion that constructs an object,
+<b>in addition to whatever else it was going to do</b>
+
+For example:
+*/
+function NothingSpecial(){
+      console.log( "Don't mind me!" );
+}
+
+var a = new NothingSpecial();
+// "Don't mind me!"
+
+a;  // {}
+/*
+<code>NothingSpecial</code> is just a plain old normal function, but when called with <code>new</code>, it constructs
+an object, almost as a side-effect, which we happen to assign to <code>a</code>. The <b>call</b> was a constructor call,
+but <code>NothingSpecial</code> is not, in and of itself, a constructor.
+
+In other words, in JS, it's most appropriate to say that a "constructor" is <b>any function called with the
+<code>new</code> keyword</b> in front of it.
+
+Functions aren't constructors, but function calls are "constructor calls " if and only if <code>new</code> is used.
+
+<em>Mechanics</em>
+
+Are those the only common triggers for ill-fated "class" discussions in JS?
+
+<b>Not quite</b>. JS developers have strived to simulate as much as they can of class-orientation:
+*/
+
+function Foo(name){
+  this.name = name;
+}
+
+Foo.prototype.myName = function() {
+  return this.name;
+
+};
+
+var a = new Foo ( "a" );
+var b = new Foo ( "b" );
+
+a.myName();    // "a"
+b.myName();    // "b"
+
+/*
+This snippet shows two additional "class-orientation" tricks in play:
+
+1. <code>this.name = name</code> : adds the <code>.name</code> property onto each object (<code>a</code> and
+<code>b</code>, respectively; see chap 2 about <code>this</code> binding), simlar to how class instances
+encapsulate data values.
+
+2. <code>Foo.prototype.myName = ...</code>: perhaps the more interesting technique, this adds a property (function)
+to the <code>Foo.prototype</code> object. Now, <code>a.nyName()</code> works, but perhaps surpirsingly. How?
+
+In the above, it's strongly tempting to think that when <code>a</code> and <code>b</code> are created, the
+properties/functions on the <code>Foo.prototype</code> object are copied over of <code>a</code> and <code>b</code>
+objects.
+<b>However, that's not what happens</b>.
+
+At the beginning of this chap, we explained the <code>[[Prototype]]</code> link, and how it provides the fall-back
+look-up steps if a property reference isn't found directly on an object, as part of the default <code>[[Get]]</code>
+algorithm.
+
+So, by virtue of how they are created, <code>a</code> and <code>b</code> each end up with an internal
+<code>[[Prototype]]</code> linkage to <code>Foo.prototype</code>. When <code>myName</code> is not found on
+<code>a</code> or <code>b</code>, respectively, it's instead found (through delegation, see chap6) on
+<code>Foo.prototype</code>.
+
+<em>"Constructor" Redux</em>
+
+Recall the discussion from earlier about the <code>.constructor</code> property, and how it seems like
+<code>a.constructor === Foo</code> being true means that <code>a</code> has an actual <code>.constructor</code>
+property on it, pointing at <code>Foo</code>? <b>Not correct</b>.
+
+This is just unfortunate confusion. In actuality, the <code>.constructor</code> reference is also delegated up to
+<code>Foo.prototype</code>, which <b>happens to</b>, by default, have a <code>.constructor</code> that points at
+<code>Foo</code>.
+
+It seems awfully convenient that an object <code>a</code> "constructed by" <code>Foo</code> would have access to a
+<code>.constructor</code> property that points to <code>Foo</code>. But that's nothing more than a false sense of
+security. It's a happy accident, almost tangentially, that <code>a.constructor</code> happens to point at <code>Foo</code>
+via this default <code>[[Prototype]]</code> delegation. There are actually several ways that the ill-fated
+assumption of .constructor meaning "was constructed by" can come back to bite you.
+
+For one, the <code>.constructor</code> property on <code>Foo.prototype</code> is only there by default on the
+object created when <code>Foo</code> the function is declared. If you create a new object, and replace a
+function's default <code>.prototype</code> object reference, the new object will not by default magically get a
+<code>.constructor</code> on it.
+
+Consider:
+*/
+function Foo(){ /* .. */ }
+
+Foo.prototype = { /* .. */ }; // create a new prototype object
+
+var a1 = new Foo; // false!
+a2.constructor === Foo; // false!
+a2.constructor === Object; // true!
+
+/*
+<code>Object(..)</code> didn't "construct" <code>a1</code> did it? It sure seems like <code>Foo()</code>
+"constructed" it. Many developers think of <code>Foo()</code> as doing the construction, but where everything
+falls apart is when you think "constructor" means "was constructed by", because by that reasoning,
+<code>a1.constructor<code> should be <code>Foo</code>, but it isn't!
+
+What's happening? <code>a1</code> has no .constructor property, so it delegates up the
+<code>[[Prototype]]</code> chain to <codeFoo.prototype</code>. But that object doesn't have a
+<code>.constructor</code> either (like the default <code>Foo.prototype</code> object would have had!), so it
+keeps delegating, this time up to <code>Object.prototype</code>, the top of the delegation chain. That
+object indeed has a <code>.constructor</code> on it, which points to the built-in <code<Object(..)</code> function.
+
+<b>Misconception, busted.</b>
+
+Of course, you can add <code>.constructor</code> back to the <code>Foo.prototype</code> object, but this takes
+manual work, especially if you want to match native behavior and have it be non-enumerable (see Chap 3).
+*/
+
+function Foo() { /* .. */ }
+
+Foo.prototype = { /* .. */ }; // create a new prototype object
+
+// Need to properly "fix" the missing `.constructor`
+// property on the new object serving as `Foo.prototype`.
+// See Chapter 3 for `defineProperty(..)`.
+Object.defineProperty( Foo.prototype, "constructor" , {
+	enumerable: false,
+	writable: true,
+	configurable: true,
+	value: Foo    // point `.constructor` at `Foo`
+} );
+
+/*
+That's a lot of manual work to fix <code>.constructor</code>. Moreover, all we're really doing is perpetuating
+the misconception that "constructor" means "was constructed by". That's an expensive illusion.
+
+The fact is, <code>.constructor</code> on an object arbitrarily points, by default, at a function who,
+reciprocally, has a reference back to the object -- a reference which it calls <code>.prototype</code>. The
+words "constructor" and "prototype" only have a loose default meaning that might or might not hold true later.
+The best thing to do is remind yourself, "constructor does not mean constructed by".
+
+<code>.constructor</code> is not a magic immutable property. It is non-enumerable (see snippet above), but its
+value is writable (can be changed), and moreover, you can add or overwrite (intentionally or accidentally) a 
+property of the name constructor on any object in any [[Prototype]] chain, with any value you see fit.
+
+By virtue of how the <code>[[Get]]</code> algorithm traverses the <code>[[Prototype]]</code> chain, a
+<code>.constructor</code> property reference found anywhere may resolve quite differently than you'd expect.
+
+See how arbitrary its meaning actually is?
+
+The result? Some arbitrary object-property reference like <code>a1.constructor</code> cannot actually be trusted
+to be the assumed default function reference. Moreover, as we'll see shortly, just by simple omission,
+<code>a1.constructor</code> can even end up pointing somewhere quite surprising and insensible.
+
+<code>.constructor</code> is extremely unreliable, and an unsafe reference to rely upon in your code.
+<b>Generally, such references should be avoided where possible.</b>
+
+<em>(Prototypal) Inheritance</em>
+We've seen some approximations of "class" mechanics as typically hacked into JavaScript programs. But JavaScript
+"class"es would be rather hollow if we didn't have an approximation of "inheritance".
+
+Actually, we've already seen the mechanism which is commonly called "prototypal inheritance" at work when a was
+able to "inherit from" Foo.prototype, and thus get access to the myName() function. But we traditionally think of
+"inheritance" as being a relationship between two "classes", rather than between "class" and "instance".
+
+https://github.com/getify/You-Dont-Know-JS/blob/1st-ed/this%20%26%20object%20prototypes/fig3.png
+
+
+
+
+
+*/
+
+
+
+</script>
+<head>
+<html>

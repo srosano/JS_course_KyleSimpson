@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+/* Functions is an another object subtype */
+
+function boo() {
+  return 42;
+}
+
+boo.bar= "Hello World";
+
+console.log ("typeof boo: ")
+console.log (typeof boo); // Function
+console.log(boo);
+console.log ("typeof boo(): ")
+console.log (typeof boo()); // Number
+console.log(boo());
+console.log ("typeof boo.bar: ")
+console.log (typeof boo.bar); // String
+console.log(boo.bar);
+
+/* Function Scopes
+
+Whenever a var appears inside a scope, that declaration is taken to belong to
+the entire scope and accessible anywhere throughout.
+
+This is called hoisting consider the following code below: */
+
+var a = 2;
+
+foo();          /* works because 'foo()' declaration is "hoisted" */
+
+function foo() {
+  a = 3;
+
+  console.log( "Inside foo() show var a: ");
+  console.log( a );                           // 3
+  var a;                    /* declaration is "hoisted" to the top of 'foo()' */
+
+}
+console.log( "ouside foo() show var a: ");
+console.log( a ); // 2
+
+/* Now showing an example of nested scopes */
+function foo(){
+  var a = 1;
+
+  function bar(){
+      var b = 2;
+
+      function baz(){
+        var c = 3;
+
+        console.log( a, b, c );    // 1, 2, 3
+      }
+
+      baz();
+      console.log( a, b );        // 1, 2
+
+  }
+bar();
+console.log( a );
+}
+
+foo();
+
+// Example of Immediately Invoked Function Expressions (IIFEs)
+console.log( "Example of Immediately Invoked Function Expressions (IIFEs)" );
+var d = 42;
+
+(function IIFE() {
+  'use strict';
+  var d = 10;
+  console.log( d );
+}());
+
+console.log( d );
+
+// Closure - Is a way of remember and continue to access a functions scope (its variables)
+// Even once the function has finished running
+
+function makeAdder(x){
+  // parameter 'x' is an inner varaible
+
+  // inner function 'add()'' uses 'x', so it has 'closure' over it
+
+  function add(y) {
+    return y + x;
+  };
+
+  return add;
+
+
+}
+
+/* 'plusOne' gets a reference to the inner 'add(..)'
+    function  with closure over the 'x' parameter of the
+    outer 'makeAdder(..) */
+
+var plusOne = makeAdder( 1 );
+
+/* 'plusTen' gets a reference to the inner 'add(..)'
+    function  with closure over the 'x' parameter of the
+    outer 'makeAdder(..) */
+var plusTen = makeAdder ( 10 );
+
+plusOne( 3 );       //4 --- 1 + 3
+plusOne( 41 );      //42 --- 1 + 41
+
+plusTen( 13 );      //23 --- 10 + 13
+
+
+
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

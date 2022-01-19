@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+/*
+Blocks as scopes:
+
+Try / Catch
+
+*/
+
+try {
+      undefined();
+}
+catch (err){
+      console.log( err );
+}
+
+console.log( err );
+
+/*
+Let keyword attaches the variable declaration to the scope of whatever block it's contained in.
+
+In other words, 'let' implicitly hijacks any block's scope for its variable declaration */
+
+var boo = true;
+if (boo){
+  let bar = boo * 2;
+  bar = something( bar );
+  console.log( bar );
+
+}
+
+console.log( bar ); //Referenceerror
+
+/*
+Garbage Collection
+*/
+
+function process(data){
+  // do something interesting
+}
+
+//anything declared inside this block can go away after
+
+{
+  let someReallyBigData = {..};
+
+  process( someReallyBigData );
+}
+
+var btn = document.getElementById("my_button");
+
+btn.addEventListener( "click", function click(evt){
+  console.log("button clicked");
+}, /* Capturing Phase */ false);
+
+/* example of hoisting */
+
+moo ();
+
+function moo(){
+  console.log ( d );
+
+  var d = 2;  
+
+}
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+function one(){
+  var a = 1;
+  console.log( a )
+}
+
+function two(){
+  var a = 2;
+  console.log( a )
+}
+
+one();
+two();
+//both can take the variable a as they are limited by their scopes
+
+
+function outer(){
+  var a = 1;
+
+  function inner(){
+    var b = 2;
+
+    //we can access both 'a' and 'b' here
+    console.log( a + b );
+  }
+
+  inner();
+
+  //we can only access 'a' here
+  console.log ( a );
+}
+
+outer();
+
+/* lexical scope rules state specifically that code in one scope can access its own
+variables within its own scope and any outside scope.
+
+Here we can see that function inner() can access variables both 'a' and 'b'
+
+But code in function outer() can only access variable 'a' */
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

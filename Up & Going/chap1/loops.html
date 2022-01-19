@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+//declaring variables
+var noOfcustomers;
+
+while ( noOfcustomers > 0){
+    console.log("How may I help you?");
+
+    noOfcustomers -= 1;
+}
+
+// Compared to
+
+do{
+  console.log("How may I help you?");
+  noOfcustomers -= 1;
+}
+while (noOfcustomers > 0);
+
+/* The difference here is only whether the conditionals is tested before the first iteration
+(while) or after the first iteration (do..while)
+
+During the while loop it will test the condition that the noOfcustomers is more than zero before proceeding with
+the contents of that loop
+
+The do while loop the contents of that loop will be run and then while statement will be evaluated after the loop
+has completed.
+
+Both these don't work as the noOfcustomers hasn't been set to a number higher than zero and doesn't change */
+
+
+var i = 0;
+var b = 0;
+
+while (true){
+  //stop the loop??
+  if( (i<=9) === false )
+  {
+    break;
+  }
+
+  console.log(i);
+  i++;
+
+}
+
+console.log("Shows the demonstration of a while loop above");
+console.log("");
+console.log("Shows the demonstration of a for loop below");
+
+// Here we have the same kind of example using a for loop
+
+for (var b = 0; b <= 9; b++){
+  console.log(b);
+}
+
+// These loops work on the conditionals True/False to in order to know when to break the loop
+// We could also write the do while loop like this
+var c = 0;
+
+console.log("Do..While loop below:");
+do {
+  console.log(c);
+  c = c + 1;
+} while (c <= 9);
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

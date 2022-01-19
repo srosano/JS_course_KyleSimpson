@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+
+const TAX_RATE = 0.30;
+//demonstrating a function
+
+function printAmount(){
+  console.log(amount.toFixed( 2 ) );
+}
+
+var amount = 69.69;
+
+printAmount();
+
+amount *= 2;
+
+printAmount();
+
+// The printAmount() allows the console.log() to be excuted whereever in the code you require.
+
+console.log("Here we are using the function allow it to take other parameters:")
+
+var amount2 = 69.69;
+
+function printAmount2(amt) {
+  console.log( amt.toFixed( 2 ) );
+}
+
+function formatAmount (){
+  return "$" + amount.toFixed( 2 );
+}
+
+console.log("Here is an example of the printAmount2(amt) with the paramers being passed to the function for evaluation:")
+printAmount2( amount2 * 2 );
+
+amount = formatAmount();
+
+console.log( amount );
+//------------------------------------------------------------------------------
+function formatAmount2 (amt2){
+  return "$" + amt2.toFixed( 2 );
+}
+
+function calcFinalPurchaseAmount ( amt ){
+  //calc the new amount with TAX_RATE
+  amt = amt + (amt * TAX_RATE);
+
+  //Return the new amount
+  return amt;
+
+}
+
+var amount3 = 69.69;
+
+amount3 = calcFinalPurchaseAmount( amount3 );
+
+console.log( amount3.toFixed( 2 ) );
+
+amount3 = formatAmount2(amount3);
+console.log( amount3 );
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

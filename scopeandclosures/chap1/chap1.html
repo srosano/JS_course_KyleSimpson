@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+<script type="text/javascript">
+
+/* Understanding javascript
+
+1. Engine responsible for start-to-finish compliation and excution of our javascript program
+
+2. Compiler works with Engine; Handles all the dirty work of parsing and code-generation
+
+3. Scope works with Engine; Collects and maintains a look-up list of all the declared identifiers (variables) and
+   enforces a strict set of rules as to how these are accessible to currently executing code.
+
+Consider the following code:
+*/
+
+function foo(a) { //Here the value 2 is assigned implicitly this a LHS reference
+	console.log( a ); // 2. This is a RHS look-up for the console object
+}
+
+foo( 2 ); // This is a RHS reference to foo meaning go and look up the value of foo, and give it to me
+
+/*
+
+Engine: Hey Scope, I have RHS reference for foo?ify all the LHS look-ups (there are
+Scope: Yes I have. Compiler declared it as a formal parameter to foo just secs ago.
+Engine: Thanks. Now, time to assign 2 to a
+Engine: Hey Scope I need a RHS look up for console?
+Scope: Yes I've got console he's built-in
+Engine: looking up log() great its a function.
+Engine: Scope got a RHS reference to a?
+Scope: Same guy as I gave you before still 2
+Engine: passing the value of a, which is 2, into log(..)
+*/
+
+function boo(f) { //LHS lookup implicit parameter assignment
+	var d = f;      //LHS Lookup for the value of d & RHS lookup for the value of f
+	return f + d;  // LHS lookup for the value of d and RHS lookup for the value of f
+}
+
+var e = boo( 2 ); // LHS lookup for the value of e & RHS lookup for the function boo(..)
+
+// Had abit of trouble with this.
+
+
+/*
+
+
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

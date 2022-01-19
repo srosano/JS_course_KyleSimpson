@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+/* The object type refer to compound value where you can set properties
+(named locations) that each hold their own values of any type */
+
+
+var obj = {
+  a: "hello world",
+  b:42,
+  c:true,
+};
+
+// Can be access with dot notation. This is the best method as it is preferred
+console.log("Dot Notation: ");
+console.log(obj.a);
+console.log(obj.b);
+console.log(obj.c);
+
+console.log("-----------")
+// Or with bracket notation. This requres either variable or a string literal
+console.log("bracket Notation: ");
+console.log(obj["a"]);
+console.log(obj["b"]);
+console.log(obj["c"]);
+
+console.log("-----------")
+
+/* It can be useful to store the in bracket notation if you want to access
+property/key stored in another variable example below: */
+
+console.log("An example of bracket notation on objects with variable manipulation")
+var obj2 ={
+  a:"hello world2",
+  b:42
+};
+
+var b = "a";
+
+console.log(obj2[b]);
+console.log(obj2["b"]);
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

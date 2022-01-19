@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+/* SCOPE CLOSURE
+console.log( "example One");
+function dude() {
+  var a = 2;
+
+  function bar() {
+    console.log( a );
+  }
+
+  return bar;
+
+}
+
+var spaz = dude();
+
+spaz();  //2 whoa man CLOSURE was just observed!!
+*/
+
+/*
+
+CLOSURE IS WHEN A FUNCTION IS ABLE TO REMEBER AND ACCESS ITS LEXICAL SCOPE EVEN WHEN THAT FUNCTION IS EXECUTING
+OUTSIDE ITS LEXICAL SCOPE
+
+The function bar() has a lexical scope access to the inner scope of dude().
+The function bar, the function itself, and pass it as value. In this case we return the value function object itself
+that bar references.
+
+After we execute dude(), we assign the value it returned (our inner bar() function) to a variable called spaz,
+and then we actually invoke spaz(), which of course is invoking our inner bar(), just by a different identifier reference.
+
+bar() is executed for sure. But in this case, it is executed outside its declared lexical scope.
+
+After dude() is executed, normally we would expect the entire scope of dude() would go away, because we know that the
+Engine employs a garbage collector that comes along and freeds up memory when its no longer in use.
+Since it would appear that the contents of dude() are no longer in use, it would seem that it should be considered gone.
+
+But the "magic" of closures does not let this happen. WHY? because the inner scope is in fact still "in use" HOW?
+who's using it? The function bar() itself.
+
+bar() has a lexial scope closure over that inner scope of dude(), which keeps that scope alive for bar() to reference
+at any later time.
+
+bar() still has a reference to that scope, and that reference is called closure!!
+
+So the variable baz is invoked ( invoking the inner function we initially labeled bar ), it duly has access to author-time
+lexical scope, so it can access the variable a just as we expect.
+
+*/
+/*
+console.log( "example two");
+
+var fn;
+
+function district() {
+	var d = 2;
+
+	function drink() {
+		console.log( d );
+	}
+
+	fn = drink; // assign `baz` to global variable
+}
+
+function speakeasy() {
+	fn(); // look ma, I saw closure!
+}
+
+district();
+
+speakeasy(); // 2*/
+
+/* We use transport an inner function outside its lexical scope,
+it will maintain a scope reference to where it was originally
+declared, and whereever we execute it.
+*/
+/*
+console.log( "Example Three");
+
+function wait(message) {
+  setTimeout( function timer (){
+        console.log( message );
+      }, 1000 );
+
+}
+
+wait("Hello, Closure you old friend");*/
+
+/* We have an inner function named timer and we pass that function
+to function named setTimeout(..). But timer has a scope closure
+over the scope of wait(..), indeed keeping an using a reference to
+the variable message.
+
+A thousand milliseconds after we have executed wait(..) and its inner
+scope should otherwise be long gone, that inner function timer still
+has closure over that scope.
+
+So eventually the Engine, the built-in utility setTimeout(..) has a
+reference to some parameter probably called fv or func etc. Engine then
+goes on to invoke that function, which is invoking our inner timer function,
+and the lexical scope reference is still intact.
+*/
+/*
+console.log( "Example Four");
+
+for (var i=1 ; i<=6; i++){
+  setTimeout( function timer(){
+      console.log( i );
+    }, i*1000 );
+}*/
+
+/* This is a for loop that specifies the statements 1, 2 and 3 respectively
+We can see the i variabe will be incremented till it's more than or equal to 5.
+
+We would expect that this would print out 1, 2, 3, 4 and 5 printed out,
+one at a time, one per a second appox.
+
+However this particular code above doesn't perform as the user expects WHY?
+
+Because the terminating condition of the loop is when i is not more than or equal to 5.
+The first time that's the case is when i = 6. So the output is reflecting that
+value after the loop terminates.
+
+The timeout functions callbacks are all running well after the completion of the loop.
+In fact as timers go, even if it were setTimeout(..,0) on each iteraction, all
+those functions would run strictly after completion of the loop, and thus print 6 each time.
+
+What is missing from our code to actually have it behave as we have semantically have implied?
+
+We are trying to imply that each iteration of the loop "captures" it's own copy of i, at the
+time of the iteration. But the way scope works, all 5 of these functions, though they
+are defined separately in loop iteration, though they are defined separately in each loop iteration,
+ALL ARE CLOSED OVER THE SAME SHARED GLOBAL SCOPE, which has, in fact, only one i in it.
+
+See below for a solution:
+*/
+/*
+console.log( "Example Five");
+for (var x=1; x<=5; x++){
+  (function(){
+    setTimeout( function ticker(){
+      console.log( x );
+    }, x*1000 );
+  })();
+}
+*/
+/* Here we are using the IIFE - Immediately Invoked Function Expression.
+
+Does it work? NO
+
+WHY?
+
+Because even though we have more lexical scope. Each timeout function callback is
+indeed closing over it's own per-iteration scope created specifically by each IIFE.
+
+It's not enoughtto have a scope close over IF THAT SCOPE IS EMPTY. Look closely, our
+IIFE scope is simply an empty do-nothing scope - It needs something track its variable.
+
+*/
+/*console.log( "Example Six" );
+for(var k=1; k<=7; k++){
+  (function(g){
+    setTimeout( function clock(){
+      console.log( g );
+    }, g*1000 );
+  })( k );
+}*/
+
+/* Since these IIFE are just functions, we can pass the k, and we can call it g if
+we prefer, or we can even call it k again.
+
+The use of IIFE inside each iteration has created a new scope for each iteration,
+which gave our timeout functions callbacks the opportunity to close over a new scope
+for each iteraction, one which had a variable with the right per-iteration value
+for us to access.
+*/
+
+/* Let's try using "let" instead of var to declare variable right there in the block scope*/
+/*
+console.log("Example Six");
+for (let y=1; y<=5; y++) {
+  let e = y; // A win for block-scope closure!
+  setTimeout( function stopwatch(){
+    console.log( e );
+  }, e*1000 );
+}*/
+
+
+/* Or we can do it like this:
+console.log("Example Seven");
+  for(let h=1; h<=5; h++){
+  setTimeout( function ticktocker(){
+    console.log( h );
+  }, h*1000 );
+
+}
+
+function module(){
+  var something = "cool";
+  var another = [1, 2, 3];
+
+  function doSomething() {
+    console.log( something );
+  }
+
+  function doAnother() {
+    console.log( another.join( " ! ") );
+  }
+
+  return {
+    doSomething : doSomething,
+    doAnother : doAnother
+  };
+
+}
+
+var foo = module();
+
+foo.doSomething();
+foo.doAnother();*/
+
+/*
+The Module is just a function, but it has to be invoked for there to be a module instance
+created. Without the excution of the outer function, the creation of the inner
+scopes and closures would not occur.
+
+The module() function returns an object, denoted by the object-literal syntax
+{key : value,} in this case {doSomething : doSomething, doAnother : doAnother}.
+This has references to our inner function, but not our inner data variables.
+We keep those hidden and private.
+This functions essentially like a public API for our module.
+
+This object return value is ultimately assigned to the outer variable foo, and
+then we can access those property methods on the API, like foo.doSomething().
+
+The doSomething and doAnother functions have closure over the inner scope of the
+module "instance" (arrived at actually invoking module() ). When we transport these
+functions outside the lexical scope, by the way of property references on the object
+we return, we have now set up a conditionby which closure can be observed and exercised.
+
+There are two requirements for the module pattern to be exercised:
+
+1. There must be an outer enclosing function, and it most be invoked at least once
+(each time creates a new module instance).
+
+2. The enclosing functon must return back at least one inner function, so that
+this inner function has closure over the private scope, and can access and/or
+modify that private state.
+
+An object with a function property on it is not REALLY a module. An object which is
+returned from a function invocation which only has data properties on it and no closured
+functions is not REALLY a module, in the observable sense.
+
+This example below shows a standalone module which can be invoked any number of times,
+each time creating a new module instance. This slight variation */
+
+var state = (function containerModule(){
+  var voice = "Hello, welcome to the container module - how can I help you?";
+  var numbers = [1, 2, 3];
+
+  function saySomething(){
+    console.log( voice );
+  }
+
+  function sayNumbers(){
+    console.log( numbers.join( " ! ") );
+  }
+
+  return {
+    saySomething : saySomething,
+    sayNumbers : sayNumbers
+  };
+
+})();
+
+state.saySomething();
+state.sayNumbers();
+
+/* Here we have an Immediately invoked function and have assigned its
+return value directly to our single module instance indentifer state */
+
+
+/* modules are just functions, so they can receive parameters: */
+/*
+function coolModule(id){
+  function identify(){
+    console.log( id );
+  }
+
+  return{
+    identify : identify
+  };
+}
+
+var foo1 = coolModule( "foo1");
+var foo2 = coolModule( "foo2");
+
+foo1.identify();
+foo2.identify();
+*/
+
+var foo = (function CoolModule (id) {
+
+  function change() {
+    //modifying the public API
+    publicAPI.identify = identify2;
+  }
+
+  function identify1() {
+    console.log( id );
+  }
+
+  function identify2() {
+    console.log( id.toUpperCase() );
+  }
+
+  var publicAPI = {
+    change: change,
+    identify: identify1
+  };
+
+
+
+  return publicAPI;
+
+})( "foo module" );
+
+foo.identify();
+foo.change();
+foo.identify();
+
+/* By retaining an inner reference to the public API object
+inside your module instance, you can modify that module instance
+from the inside, including adding and removing methods, properties, and changing their values */
+
+var MyModules = (function Manager() {
+  var modules = {};
+
+  function define(name, deps, impl) {
+    for (var i=0; i < deps.length; i++){
+      deps[i] = modules[deps[i]];
+    }
+    modules[name] = impl.apply( impl, deps); /* This is invoking the
+    definition wrapperfor a module (passing any dependencies), and
+    storing the return value, the module's API, into an internal list
+    of modules tracked by name */
+  }
+
+  function get(name){
+    return modules[name];
+  }
+
+  return {
+    define: define,
+    get:get
+  }
+})();
+
+MyModules.define( "bar", [], function(){
+  function hello(who) {
+    return "Let me introduce: " +  who;
+  }
+
+  return {
+    hello:hello
+  };
+});
+
+MyModules.define( "foo", ["bar"], function(bar){
+  var hungry = "hippo";
+
+  function awesome() {
+    console.log( bar.hello( hungry ).toUpperCase() );
+  }
+
+  return{
+    awesome:awesome
+  };
+
+});
+
+var bar = MyModules.get( "bar" );
+var foo = MyModules.get( "foo" );
+
+console.log(
+  bar.hello( "hippo" )
+); //Let me introduce: hippo
+
+foo.awesome();
+
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

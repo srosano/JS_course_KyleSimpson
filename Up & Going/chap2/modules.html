@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+/* User() serves as an outer scope that holds variables username and password,
+   As well as the inner doLogin() function; these are all private inner details
+   that cannot be accessed from the outside world */
+
+
+function User(){
+  var username, password;
+
+  function doLogin(user,pw){
+    username = user;
+    password = pw;
+
+    //do the rest of the login work
+
+  }
+/* This is an object with one property/method in it , login, which is a reference
+   to the inner doLogin() function. When we return publicAPI from User(), it becomes
+   the instance called fred */
+   
+var publicAPI(){
+  login:doLogin
+};
+
+return publicAPI;
+}
+
+// Create a 'user' module instance
+/* Here we are creating an instance of the USER module -- a whole new scope is
+   created and thus a whole new copy of each of these inner variables/functions.
+   We assign this instance to fred.
+   If we run user() again we will get a separate instance from fred. */
+
+var fred = User();
+
+fred.login( "fred", "somepassword123");
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

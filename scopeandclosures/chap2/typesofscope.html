@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+/* There are two types of scope Lexical and Dynamic
+
+lexing process examines some string of source code characters and assigns semantic
+meaning to the tokens as a result of some stateful parsing.
+
+
+This is based on where variables and blocks of scope are authored, by you, at write time,
+and thus (mostly) set in stone by the time the lexer processes your code.
+
+*/
+
+function foo(a){ // bubble 1
+  var b = a * 2;  // bubble 2
+  function bar(c){ // bubble 3
+    console.log(a, b, c);
+  }
+
+  bar(b * 3 );
+}
+
+foo( 2 );
+
+/*
+Bubble 1 encompasses the global scope, and has just one identifer in it: foo
+
+bubble 2 encompasses the scope of foo, which includes three identifers: a, b, bar
+
+Bubble 3 encompasses the scope of bar, and includes just one identifer: c
+
+Lexical scope is only defined where the function was declared
+
+Now how to "cheat" Lexical scope:
+*/
+console.log("cheating lexical scope using eval():");
+
+function boo(str, a){
+  eval ( str ); // Cheating
+  console.log( a, b);
+}
+
+var b = 2;
+
+boo("var b = 3;", 1 ); // 1 3 instead of 1 2
+
+/*
+The string "var b = 3;" is treated at the point of the eval(..) call, as code was
+there all along. Because the code happens to declare a new variable b, it modifies
+the existing lexical scope of boo(..)
+
+You can see that the b variable is actually declared inside within boo(..) that
+shadows the b variable that was declared in the outer (global) scope.
+
+However using "use strict" will generate a reference error instead.
+
+Now showing an example of cheating lexical scope using 'with'
+*/
+console.log("cheating lexical scope using the with():");
+var obj = {a:2,b:2,c:3};
+
+//more "tedious" to repeat "obj"
+obj.a = 2;
+obj.b = 3;
+obj.c = 4;
+
+//easier short-hand
+with(obj){
+  a = 3;
+  b = 4;
+  c = 5;
+}
+
+function moo(obj){ // takes an object reference as an argument, and calls with (obj) on the reference
+  with (obj){
+    a = 2;         //normal lexical reference to variable a
+  }
+}
+
+var o1 = {a:3};
+var o2 = {b:3};
+
+moo( o1 );
+console.log( o1.a );  // 2
+
+moo( o2 );
+console.log( o2.a );  //undefined
+console.log( a );     // 2 -- leaked global
+
+/*
+Two objects are created o1 and o2.
+
+One has an a property and the other does not.
+
+When we pass in the o1, the a = 2 assignment finds the property o1.a and assigns it
+the value 2.
+
+However when we pass in the o2, since it does not have 'a' property, no such property is
+created, and o2, remains undefined.
+
+global variable a was created by the a = 2 assignment. How can this be?
+The with statement takes an object, one that has zero or more properties, and
+treats that object as if it is wholly seperate lexical scope, and thus the objects
+properties are treated as lexically defined identifers in that "scope".
+
+N: Even though a with block treats an object like a lexical scope, a normal var declaration
+inside that with blockwill not be scoped to that with block, but instead to the containing function scope.
+
+Neither the "scope" of o2, nor the scope of moo(..), nor the global scope even, has 'a' identifer to be
+found, so when 'a = 2' is executed, it results in the automatic global being created (since we're in non-strict mode).
+
+Clearly using eval() and with are bad coding practices if used can affect lexical scope and affect performance
+
+Very interesting concepts and really shows us the disadvantages of using the eval() and 'with' statements
+Probably one of the most interesting things to know with javascript.
+
+*/
+
+
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

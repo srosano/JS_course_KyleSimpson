@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+// I am just doing these practice questions as extracted from https://github.com/getify/You-Dont-Know-JS/
+/*
+
+1.
+Write a program to calculate the total price of your phone purchase.
+You will keep purchasing phones (hint: loop!) until you run out of money in your bank account.
+You'll also buy accessories for each phone as long as your purchase amount is below your mental spending threshold.
+*/
+const TAX_RATE = 0.30;
+const accessories = 50.99;
+const phone = 250.99;
+var bankAcc;
+var totalPrice;
+var budget;
+var phoneUnits;
+var accUnits;
+
+
+bankAcc = 10000.91;
+budget = 5000;
+accUnits = 0;
+phoneUnits = 0;
+
+do {
+  bankAcc -= phone;
+  phoneUnits++;
+  if(bankAcc >= budget){
+    bankAcc -= accessories;
+    accUnits++;
+  }
+  else{
+    break;
+  }
+  console.log(bankAcc);
+}
+while( bankAcc >= budget );
+
+  console.log( "There were " + accUnits + " Accessories purchased" );
+  console.log( "There were " + phoneUnits + " phoneUnits purchased" );
+
+totalPrice = (accUnits * accessories) + (phoneUnits* phone);
+
+  console.log ("At a combined cost of " + "$" + totalPrice );
+
+/*
+2.
+After you've calculated your purchase amount, add in the tax, then print out the calculated purchase amount, properly formatted
+*/
+function formatAmount(amt){
+  console.log("$" + amt.toFixed( 2 ) );
+}
+
+totalPrice = totalPrice + (TAX_RATE * totalPrice);
+
+console.log("total price with tax") + formatAmount(totalPrice);
+console.log("");
+
+/*
+3.
+Finally, check the amount against your bank account balance to see if you can afford it or not.
+*/
+if(totalPrice >= bankAcc){
+  console.log("We can afford it");
+}else{
+  console.log("We cannot afford it");
+}
+
+
+// Now the solution below:
+
+console.log("Solution: ")
+
+const SPENDING_THRESHOLD = 5000;
+const TAX_RATE2 = 0.30;
+const PHONE_PRICE = 250.99;
+const ACCESSORY_PRICE = 50.99;
+
+var bank_balance = 10000.91;
+var amount = 0;
+
+function calculateTax(amount) {
+	return amount * TAX_RATE2;
+}
+
+function formatAmount2(amount) {
+	return "$" + amount.toFixed( 2 );
+}
+
+// keep buying phones while you still have money
+while (amount < bank_balance) {
+	// buy a new phone!
+	amount = amount + PHONE_PRICE;
+
+	// can we afford the accessory?
+	if (amount < SPENDING_THRESHOLD) {
+		amount = amount + ACCESSORY_PRICE;
+	}
+  console.log(amount);
+}
+
+// don't forget to pay the government, too
+amount = amount + calculateTax( amount );
+
+console.log(
+	"Your purchase: " + formatAmount2( amount )
+);
+// Your purchase: $334.76
+
+// can you actually afford this purchase?
+if (amount > bank_balance) {
+	console.log(
+		"You can't afford this purchase. :("
+	);
+}else{
+  console.log(
+		"You CAN afford this purchase. :)"
+	);
+}
+// You can't afford this purchase. :(
+
+
+/* My way is slightly different we buy up to the budgeted amount for both the phone and the accessories
+No point in not buying items simply because the numbers aren't right. I assume that you would want to buy
+up to the budgeted amount as closely as possible to it so that you are able to maximise your value */
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

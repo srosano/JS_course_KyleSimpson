@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+var foo = {
+  a:42
+
+};
+
+var bar = Object.create( foo );
+
+bar.b = "Hello World";
+
+console.log(bar.b);        // Hello world
+console.log(bar.a);        // 42 <-- delegated to foo
+
+/* The a property doesn't actually exist on the bar object because bar is prototype-linked
+   to foo, Javascript automatically falls back to looking for a on the foo  object, where it
+   is found.
+
+   A more natural way of applying prototypes is a pattern called "behavour delegation" , where
+   you intentially designed your linked objects to be able to delegate from one to the other
+   for parts of the needed behavour */
+
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

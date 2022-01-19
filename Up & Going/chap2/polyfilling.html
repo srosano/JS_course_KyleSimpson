@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+/* This an example of a polyfill to check for NaN values, depreciating the original
+   isNaN(..) utility. This allows the code to run in older JS envrioments.
+
+   You can see official polyfills at:
+   https://github.com/es-shims/es5-shim
+   https://github.com/es-shims/es6-shim
+*/
+
+if(!Number.isNaN){
+
+    Number.isNaN = function isNaN(x){
+          return x !== x;
+    };
+}
+
+/* Alternatively you can Transpile the code which is to transform and compile
+   the code for the older browsers.
+
+   Here is an example:
+*/
+
+function boo( a = 2){
+  console.log ( a );
+}
+
+boo();
+
+boo(42);
+
+// totally invalid in pre-ES6 engines so run a transpiler and you get this:
+
+function boo() {
+  var a = arguments[0] !== (void 0) ? arguments[0] : 2;
+  console.log( a );
+}
+
+/* Checks to see if the arguments[0] is (void 0) (aka undefined), and if so
+   provides the 2 default value; otherwise it assigns whatever was passed.
+
+   Best transpiler Traceur!!!!!!!!!
+*/
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

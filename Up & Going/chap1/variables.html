@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+//using constant here to indicate the variable will not change and protect it from being changed
+const TAX_RATE = 0.30
+
+//the answer to life the universe and everything
+var amount = 69.69;
+amount *= 2;
+amount2 = amount;
+
+// Here the console log implicitly coerce that number value to a string to print it out
+
+console.log( amount );   //$139.38 output is as a number
+console.log( amount2 );
+//Let's convert number to string and add '$' at the front of it
+
+// Here we are explicitly coerce the 139.38 value as a string
+amount = "$" + String( amount )
+
+console.log( amount );
+
+// Here I have used the concat function instead of the upbove method
+
+amount2 = "$".concat(String(amount2));
+// Here we are explicitly coerce the 139.38 value as a string
+console.log( amount2 );
+
+// Calulating tax on amount
+var tax;
+var amount3 = 69.69;
+amount3 *= 2;
+tax = amount3 + (amount3 * TAX_RATE);
+console.log(tax);
+
+//toFixed() add the scale to the number eg the decimal places and produces a string
+console.log( tax.toFixed( 2 ) );
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>

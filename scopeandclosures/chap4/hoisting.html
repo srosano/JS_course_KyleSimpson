@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script type="text/javascript">
+
+console.log( "First example here" );
+
+a = 2;
+
+var a;
+
+console.log( a );
+
+/* Here we see that the output is 2, Why? because the Engine is compling Javascript before it interprets,
+
+All declarations, both variables and functions, are processed first, before any part of your code is
+executed.
+
+Here is another example: */
+console.log( "Second example here" );
+
+console.log( b );
+var b =  3;
+
+/* Here we see undefined example as the second example. Why?
+
+Javascript sees two statements here in the first example it sees:
+
+var a; -- this is the compilation
+
+a = 2;            -- these are the execution
+console.log( a );
+
+Our second example is simlarly done as following:
+
+var b;                -- this is the compilation
+
+console.log( b );     -- these are the execution
+b = 2;
+
+So this is where hoisting comes into effect, in which the declaration comes before the assignment
+
+This hoisting is per-scope, an example here:
+*/
+
+function cool() {
+  var c;
+
+  console.log( c ); // undefined
+
+  c = 4;
+
+}
+
+cool();
+
+/* Here we can see that the program runs in order of precedence var c is declared
+
+but it has not yet being assigned the c = 4; so we see a undefined message - This
+shows us that the variable has been declared but not defined!
+
+Simlarly...
+*/
+
+  console.log( "Third example here" );
+
+/*  dude(); // TypeError
+  bar(); // ReferenceError
+
+  var dude = function bar() {
+  	// ...
+  };
+*/
+
+/* dude() throws not a ReferenceError but a TypeError!
+
+The variable dude is hoisted and attached to the enclosing scope (global) of this program,
+so dude() doesn't fail as ReferenceError.
+But dude doesn't have a value yet (as it would have had it been a true function instead of expression).
+
+So dude() is attempting to invoke the the undefined value, which is a TypeError illegal operation
+*/
+
+/* FUNCTIONS */
+console.log( "Forth example here" );
+dude2();  // 1
+
+var dude2;
+
+function dude2() {
+  console.log( 1 );
+
+}
+
+dude2 = function() {
+  console.log( 2 );
+
+}
+
+/* This is interpreted by the engine as:
+
+function dude2() {
+  console.log( 1 );
+
+}
+
+dude2();
+
+dude2 = function() {
+  console.log( 2 );
+
+}
+
+Notice that var dude2 was the duplicate ( and thus ignored ) declaration,
+even though it came before the function dude2() declaration, because function
+declarations are hoisted before normal variables.
+
+while multiple/duplicate var declarations are effectively ignored, subsequent function
+declarations do override previous ones. See the example below:
+*/
+
+kree();           // 3
+
+function kree() {
+  console.log( 1 );
+
+}
+
+var kree = function (){
+  console.log( 2 );
+
+};
+
+function kree() {
+  console.log( 3 );
+
+}
+
+/*
+
+We can be tempted to look at var a = 2; as one statement, but the Javascript Engine
+does not see it that way. It sees it like this:
+
+var a;
+
+a = 2;
+
+as two separate statments. First one is complier-phase task and the second one is
+an execution-phase task.
+
+What this leads to is that all declarations in scope, regardless of where they appear,
+are processed, are processed first before the code itself is executed. You can visualize
+this as declarations (variables and functions) being "moved" to the top of their respective
+scopes, which we call "Hoisting".
+
+Declarations themeselves are hoisted, but assignments, even assignements of function expressions,
+are not hoisted.
+
+Be careful of duplicate declarations, expecially mixed between normal var declarations and function
+declarations!!
+*/
+
+
+</script>
+
+</head>
+<body>
+
+</body>
+</html>
